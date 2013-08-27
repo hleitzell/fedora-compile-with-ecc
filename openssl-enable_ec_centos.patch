@@ -1,0 +1,95 @@
+diff --git a/openssl.spec b/openssl.spec
+index 19c769a..45aebcd 100644
+--- a/openssl.spec
++++ b/openssl.spec
+@@ -27,7 +27,7 @@ Epoch: 1
+ # tarball with the hobble-openssl script which is included below.
+ # The original openssl upstream tarball cannot be shipped in the .src.rpm.
+ Source: openssl-%{version}-usa.tar.xz
+-Source1: hobble-openssl
++#Source1: hobble-openssl
+ Source2: Makefile.certificate
+ Source6: make-dummy-cert
+ Source7: renew-dummy-cert
+@@ -139,7 +139,7 @@ from other formats to the formats used by the OpenSSL toolkit.
+ 
+ # The hobble_openssl is called here redundantly, just to be sure.
+ # The tarball has already the sources removed.
+-%{SOURCE1} > /dev/null
++#%{SOURCE1} > /dev/null
+ %patch1 -p1 -b .rpmbuild
+ %patch2 -p1 -b .defaults
+ %patch4 -p1 -b .enginesdir %{?_rawbuild}
+@@ -158,19 +158,19 @@ from other formats to the formats used by the OpenSSL toolkit.
+ %patch36 -p1 -b .doc-noeof
+ %patch38 -p1 -b .op-all
+ %patch39 -p1 -b .ipv6-apps
+-%patch40 -p1 -b .fips
+-%patch45 -p1 -b .env-zlib
++#%patch40 -p1 -b .fips
++#%patch45 -p1 -b .env-zlib
+ %patch47 -p1 -b .warning
+ %patch49 -p1 -b .algo-doc
+ %patch50 -p1 -b .dtls1-abi
+ %patch51 -p1 -b .version
+-%patch56 -p1 -b .x931
+-%patch58 -p1 -b .md5-allow
++#%patch56 -p1 -b .x931
++#%patch58 -p1 -b .md5-allow
+ %patch60 -p1 -b .dgst
+ %patch63 -p1 -b .starttls
+ %patch65 -p1 -b .chil
+ %patch66 -p1 -b .krb5
+-%patch68 -p1 -b .secure-getenv
++#%patch68 -p1 -b .secure-getenv
+ %patch69 -p1 -b .dh1024
+ 
+ %patch81 -p1 -b .padlock64
+@@ -227,9 +227,9 @@ sslarch=linux-ppc64
+ ./Configure \
+ 	--prefix=/usr --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
+ 	zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 \
+-	enable-cms enable-md2 no-mdc2 no-rc5 no-ec no-ec2m no-ecdh no-ecdsa no-srp \
++	enable-cms enable-md2 no-mdc2 no-rc5 enable-ec enable-ecdh enable-ecdsa enable-ec2m enable-ecdsa no-srp \
+ 	--with-krb5-flavor=MIT --enginesdir=%{_libdir}/openssl/engines \
+-	--with-krb5-dir=/usr shared  ${sslarch} %{?!nofips:fips}
++	--with-krb5-dir=/usr shared  ${sslarch}
+ 
+ # Add -Wa,--noexecstack here so that libcrypto's assembler modules will be
+ # marked as not requiring an executable stack.
+@@ -266,15 +266,15 @@ make -C test apps tests
+ ./openssl-thread-test --threads %{thread_test_threads}
+ 
+ # Add generation of HMAC checksum of the final stripped library
+-%define __spec_install_post \
+-    %{?__debug_package:%{__debug_install_post}} \
+-    %{__arch_install_post} \
+-    %{__os_install_post} \
+-    crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libcrypto.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{version}.hmac \
+-    ln -sf .libcrypto.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{soversion}.hmac \
+-    crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libssl.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{version}.hmac \
+-    ln -sf .libssl.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{soversion}.hmac \
+-%{nil}
++#%define __spec_install_post \
++#    %{?__debug_package:%{__debug_install_post}} \
++#    %{__arch_install_post} \
++#    %{__os_install_post} \
++#    crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libcrypto.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{version}.hmac \
++#    ln -sf .libcrypto.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libcrypto.so.%{soversion}.hmac \
++#    crypto/fips/fips_standalone_hmac $RPM_BUILD_ROOT%{_libdir}/libssl.so.%{version} >$RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{version}.hmac \
++#    ln -sf .libssl.so.%{version}.hmac $RPM_BUILD_ROOT%{_libdir}/.libssl.so.%{soversion}.hmac \
++#%{nil}
+ 
+ %define __provides_exclude_from %{_libdir}/openssl
+ 
+@@ -406,8 +406,8 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
+ %attr(0755,root,root) %{_libdir}/libcrypto.so.%{soversion}
+ %attr(0755,root,root) %{_libdir}/libssl.so.%{version}
+ %attr(0755,root,root) %{_libdir}/libssl.so.%{soversion}
+-%attr(0644,root,root) %{_libdir}/.libcrypto.so.*.hmac
+-%attr(0644,root,root) %{_libdir}/.libssl.so.*.hmac
++#%attr(0644,root,root) %{_libdir}/.libcrypto.so.*.hmac
++#%attr(0644,root,root) %{_libdir}/.libssl.so.*.hmac
+ %attr(0755,root,root) %{_libdir}/openssl
+ 
+ %files devel
