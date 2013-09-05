@@ -1,0 +1,15 @@
+diff --git a/SPECS/nss-softokn.spec b/SPECS/nss-softokn.spec
+index 0d47a5b..6b0f570 100644
+--- a/SPECS/nss-softokn.spec
++++ b/SPECS/nss-softokn.spec
+@@ -195,6 +195,10 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
+ # Use only the basicutil subset for sectools.a
+ export NSS_BUILD_SOFTOKEN_ONLY=1
+ 
++# Enable ECC
++export NSS_ENABLE_ECC=1
++export NSS_ECC_MORE_THAN_SUITE_B=1
++
+ # Compile softokn plus needed support
+ %{__make} -C ./nss/coreconf
+ %{__make} -C ./nss/lib/dbm

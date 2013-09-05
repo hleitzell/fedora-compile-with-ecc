@@ -8,21 +8,23 @@ arch=`uname -m`
 tmpdir=`mktemp -d`
 rdir=`dirname $0`
 dir=`realpath $rdir`
-patch="${dir}/openssl-enable_ec.patch"
+patch_openssl="${dir}/patches/openssl-enable_ec.patch"
+patch_nsssoftokn="${dir}/patches/nss-softokn-enable_ec.patch"
+patch_nssutil="${dir}/patches/nss-util-enable_ec.patch"
 
-if [ ! -r $patch ]; then
-  echo "ERROR: Cannot read the patch file: $patch"
-  exit 1
-fi
 if [ -e ~/rpmbuild ]; then
   echo "ERROR: directory ~/rpmbuild already exists"
   exit 1
 fi
-
+cd $tmpdir
 #echo "Installing building dependencies:"
 #sudo yum-builddep openssl httpd nss nss-util nss-softokn
 
 # Get OpenSSL version info
+if [ ! -r $patch_openssl ]; then
+  echo "ERROR: Cannot read the patch file: $patch_openssl"
+  exit 1
+fi
 cd $tmpdir
 fullname=`repoquery openssl.${arch}`
 openssl_v=`echo $fullname | sed -e 's,openssl-.:\(.*\)-.*,\1,'`
@@ -36,15 +38,15 @@ wget --timestamping -P $tmpdir  https://www.openssl.org/source/openssl-${openssl
 # OpenSSL - Fedora
 rpm -i ${tmpdir}/openssl-${openssl_v}-${openssl_r}.src.rpm
 cp -p ${tmpdir}/openssl-${openssl_v}.tar.gz ~/rpmbuild/SOURCES 
-cd ~/rpmbuild/SPECS
-# Orginal patch from http://zxvdr.fedorapeople.org/openssl.spec.ec_patch
-patch -p0 < $patch
-# Fedora's SRPM has a modified source, must use the original
-sed -i -e 's/-usa.tar.xz/.tar.gz/' openssl.spec
-rpmbuild -ba openssl.spec
-mkdir -p ${tmpdir}/openssl
-mv ~/rpmbuild/RPMS/*/* ${tmpdir}/openssl
-cd $tmpdir
+pushd  ~/rpmbuild/SPECS
+  # Orginal patch from http://zxvdr.fedorapeople.org/openssl.spec.ec_patch
+  patch -p0 < $patch_openssl
+  # Fedora's SRPM has a modified source, must use the original
+  sed -i -e 's/-usa.tar.xz/.tar.gz/' openssl.spec
+  rpmbuild -ba openssl.spec
+  mkdir -p ${tmpdir}/openssl
+  mv ~/rpmbuild/RPMS/*/* ${tmpdir}/openssl
+popd
 rm -rf ~/rpmbuild
 sudo rpm -ivh --force ${tmpdir}/openssl/openssl-libs-${openssl_v}-${openssl_r}.${arch}.rpm
 sudo rpm -ivh --force ${tmpdir}/openssl/openssl-${openssl_v}-${openssl_r}.${arch}.rpm
@@ -62,10 +64,17 @@ yumdownloader --destdir $tmpdir --source httpd
 rpmbuild --rebuild ${tmpdir}/httpd-${httpd_v}-${httpd_r}.src.rpm
 mkdir -p ${tmpdir}/httpd
 mv ~/rpmbuild/RPMS/*/* ${tmpdir}/httpd
-cd $tmpdir
 rm -rf ~/rpmbuild
 
 # NSS
+if [ ! -r $patch_nsssoftokn ]; then
+  echo "ERROR: Cannot read the patch file: $patch_nsssoftokn"
+  exit 1
+fi
+if [ ! -r $patch_nssutil ]; then
+  echo "ERROR: Cannot read the patch file: $patch_nssutil"
+  exit 1
+fi
 fullname=`repoquery nss-util.${arch}`
 nss_util_v=`echo $fullname | sed -e 's,nss-util-.:\(.*\)-.*,\1,'`
 nss_util_r=`echo $fullname | sed -e 's,nss-util-.:.*-\(.*\)\..*,\1,'`
@@ -90,6 +99,9 @@ wget --timestamping -P $tmpdir ftp://ftp.mozilla.org/pub/mozilla.org/security/ns
 # nss-util
 rpm -i ${tmpdir}/nss-util-${nss_util_v}-${nss_util_r}.src.rpm
 cp -p -f ${tmpdir}/nss-${nss_v}.tar.gz ~/rpmbuild/SOURCES/nss-${nss_v}-stripped.tar.bz2
+pushd ~/rpmbuild
+  patch -p1 < $patch_nssutil
+popd
 rpmbuild -ba ~/rpmbuild/SPECS/nss-util.spec
 mkdir -p ${tmpdir}/nss-util
 mv ~/rpmbuild/RPMS/*/* ${tmpdir}/nss-util
@@ -100,6 +112,9 @@ sudo rpm -ivh --force ${tmpdir}/nss-util/nss-util-devel-${nss_util_v}-${nss_util
 # nss-softokn
 rpm -i ${tmpdir}/nss-softokn-${nss_softokn_v}-${nss_softokn_r}.src.rpm
 cp -p -f ${tmpdir}/nss-${nss_v}.tar.gz ~/rpmbuild/SOURCES/nss-${nss_v}-stripped.tar.bz2
+pushd ~/rpmbuild
+  patch -p1 < $patch_nsssoftokn
+popd
 rpmbuild -ba ~/rpmbuild/SPECS/nss-softokn.spec
 mkdir -p ${tmpdir}/nss-softokn
 mv ~/rpmbuild/RPMS/*/* ${tmpdir}/nss-softokn
