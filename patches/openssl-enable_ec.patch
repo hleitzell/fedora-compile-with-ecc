@@ -1,5 +1,5 @@
 diff --git a/SPECS/openssl.spec b/SPECS/openssl.spec
-index 19c769a..26e2fa2 100644
+index 19c769a..ce8339d 100644
 --- a/SPECS/openssl.spec
 +++ b/SPECS/openssl.spec
 @@ -21,13 +21,13 @@
@@ -28,7 +28,7 @@ index 19c769a..26e2fa2 100644
  %patch1 -p1 -b .rpmbuild
  %patch2 -p1 -b .defaults
  %patch4 -p1 -b .enginesdir %{?_rawbuild}
-@@ -158,14 +158,14 @@ from other formats to the formats used by the OpenSSL toolkit.
+@@ -158,19 +158,19 @@ from other formats to the formats used by the OpenSSL toolkit.
  %patch36 -p1 -b .doc-noeof
  %patch38 -p1 -b .op-all
  %patch39 -p1 -b .ipv6-apps
@@ -46,6 +46,12 @@ index 19c769a..26e2fa2 100644
  %patch60 -p1 -b .dgst
  %patch63 -p1 -b .starttls
  %patch65 -p1 -b .chil
+ %patch66 -p1 -b .krb5
+-%patch68 -p1 -b .secure-getenv
++#%patch68 -p1 -b .secure-getenv
+ %patch69 -p1 -b .dh1024
+ 
+ %patch81 -p1 -b .padlock64
 @@ -227,9 +227,9 @@ sslarch=linux-ppc64
  ./Configure \
  	--prefix=/usr --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
