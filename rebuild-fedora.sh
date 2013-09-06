@@ -4,7 +4,13 @@ if [ `id -u` -eq 0 ]; then
   echo "ERROR: don't run this script as root"
   exit 1
 fi
+if [ -e ~/rpmbuild ]; then
+  echo "ERROR: directory ~/rpmbuild already exists"
+  exit 1
+fi
+
 arch=`uname -m`
+mock_arch="fedora-19-x86_64"
 tmpdir=`mktemp -d`
 rdir=`dirname $0`
 dir=`realpath $rdir`
@@ -12,20 +18,16 @@ patch_openssl="${dir}/patches/openssl-enable_ec.patch"
 patch_nsssoftokn="${dir}/patches/nss-softokn-enable_ec.patch"
 patch_nssutil="${dir}/patches/nss-util-enable_ec.patch"
 
-if [ -e ~/rpmbuild ]; then
-  echo "ERROR: directory ~/rpmbuild already exists"
-  exit 1
-fi
 cd $tmpdir
-#echo "Installing building dependencies:"
-#sudo yum-builddep openssl httpd nss nss-util nss-softokn
 
+########################################################
+# OpenSSL
+########################################################
 # Get OpenSSL version info
 if [ ! -r $patch_openssl ]; then
   echo "ERROR: Cannot read the patch file: $patch_openssl"
   exit 1
 fi
-cd $tmpdir
 fullname=`repoquery openssl.${arch}`
 openssl_v=`echo $fullname | sed -e 's,openssl-.:\(.*\)-.*,\1,'`
 openssl_r=`echo $fullname | sed -e 's,openssl-.:.*-\(.*\)\..*,\1,'`
@@ -38,19 +40,16 @@ wget --timestamping -P $tmpdir  https://www.openssl.org/source/openssl-${openssl
 # OpenSSL - Fedora
 rpm -i ${tmpdir}/openssl-${openssl_v}-${openssl_r}.src.rpm
 cp -p ${tmpdir}/openssl-${openssl_v}.tar.gz ~/rpmbuild/SOURCES 
-pushd  ~/rpmbuild/SPECS
+pushd  ~/rpmbuild
   # Orginal patch from http://zxvdr.fedorapeople.org/openssl.spec.ec_patch
-  patch -p0 < $patch_openssl
-  # Fedora's SRPM has a modified source, must use the original
-  sed -i -e 's/-usa.tar.xz/.tar.gz/' openssl.spec
-  rpmbuild -ba openssl.spec
-  mkdir -p ${tmpdir}/openssl
-  mv ~/rpmbuild/RPMS/*/* ${tmpdir}/openssl
+  patch -p1 < $patch_openssl
 popd
+rpmbuild -bs ~/rpmbuild/SPECS/openssl.spec
+mock -r $mock_arch ~/rpmbuild/SRPMS/openssl*src.rpm
+mkdir -p ${tmpdir}/openssl
+mv /var/lib/mock/fedora-19-x86_64/results/*rpm ${tmpdir}/openssl
 rm -rf ~/rpmbuild
-sudo rpm -ivh --force ${tmpdir}/openssl/openssl-libs-${openssl_v}-${openssl_r}.${arch}.rpm
-sudo rpm -ivh --force ${tmpdir}/openssl/openssl-${openssl_v}-${openssl_r}.${arch}.rpm
-sudo rpm -ivh --force ${tmpdir}/openssl/openssl-devel-${openssl_v}-${openssl_r}.${arch}.rpm
+exit 0
 
 # Get Apache verson info
 fullname=`repoquery httpd.${arch}`
@@ -61,6 +60,12 @@ echo "Downloading httpd for Fedora"
 yumdownloader --destdir $tmpdir --source httpd
 
 # Apache - Fedora
+rpm -i ${tmpdir}/httpd-${httpd_v}-${httpd_r}.src.rpm
+pushd ~/rpmbuild
+  patch -p1 < $patch_httpd
+popd
+rpmbuild -bs ~/rpmbuild/SPECS/httpd.spec
+mock 
 rpmbuild --rebuild ${tmpdir}/httpd-${httpd_v}-${httpd_r}.src.rpm
 mkdir -p ${tmpdir}/httpd
 mv ~/rpmbuild/RPMS/*/* ${tmpdir}/httpd

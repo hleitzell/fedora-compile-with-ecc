@@ -1,15 +1,25 @@
---- openssl.spec.orig	2013-04-04 12:19:45.228865861 +1100
-+++ openssl.spec	2013-04-04 13:10:34.384466102 +1100
-@@ -27,7 +27,7 @@
+diff --git a/SPECS/openssl.spec b/SPECS/openssl.spec
+index 19c769a..26e2fa2 100644
+--- a/SPECS/openssl.spec
++++ b/SPECS/openssl.spec
+@@ -21,13 +21,13 @@
+ Summary: Utilities from the general purpose cryptography library with TLS implementation
+ Name: openssl
+ Version: 1.0.1e
+-Release: 4%{?dist}
++Release: 4.ecc
+ Epoch: 1
+ # We have to remove certain patented algorithms from the openssl source
  # tarball with the hobble-openssl script which is included below.
  # The original openssl upstream tarball cannot be shipped in the .src.rpm.
- Source: openssl-%{version}-usa.tar.xz
+-Source: openssl-%{version}-usa.tar.xz
 -Source1: hobble-openssl
++Source: openssl-%{version}.tar.gz
 +#Source1: hobble-openssl
  Source2: Makefile.certificate
  Source6: make-dummy-cert
  Source7: renew-dummy-cert
-@@ -139,7 +139,7 @@
+@@ -139,7 +139,7 @@ from other formats to the formats used by the OpenSSL toolkit.
  
  # The hobble_openssl is called here redundantly, just to be sure.
  # The tarball has already the sources removed.
@@ -18,7 +28,7 @@
  %patch1 -p1 -b .rpmbuild
  %patch2 -p1 -b .defaults
  %patch4 -p1 -b .enginesdir %{?_rawbuild}
-@@ -158,19 +158,19 @@
+@@ -158,14 +158,14 @@ from other formats to the formats used by the OpenSSL toolkit.
  %patch36 -p1 -b .doc-noeof
  %patch38 -p1 -b .op-all
  %patch39 -p1 -b .ipv6-apps
@@ -36,7 +46,7 @@
  %patch60 -p1 -b .dgst
  %patch63 -p1 -b .starttls
  %patch65 -p1 -b .chil
-@@ -227,9 +227,9 @@
+@@ -227,9 +227,9 @@ sslarch=linux-ppc64
  ./Configure \
  	--prefix=/usr --openssldir=%{_sysconfdir}/pki/tls ${sslflags} \
  	zlib enable-camellia enable-seed enable-tlsext enable-rfc3779 \
@@ -48,7 +58,7 @@
  
  # Add -Wa,--noexecstack here so that libcrypto's assembler modules will be
  # marked as not requiring an executable stack.
-@@ -266,15 +266,15 @@
+@@ -266,15 +266,15 @@ make -C test apps tests
  ./openssl-thread-test --threads %{thread_test_threads}
  
  # Add generation of HMAC checksum of the final stripped library
@@ -73,7 +83,7 @@
  
  %define __provides_exclude_from %{_libdir}/openssl
  
-@@ -406,8 +406,8 @@
+@@ -406,8 +406,8 @@ rm -rf $RPM_BUILD_ROOT/%{_libdir}/fipscanister.*
  %attr(0755,root,root) %{_libdir}/libcrypto.so.%{soversion}
  %attr(0755,root,root) %{_libdir}/libssl.so.%{version}
  %attr(0755,root,root) %{_libdir}/libssl.so.%{soversion}
