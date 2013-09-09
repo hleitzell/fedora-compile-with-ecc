@@ -1,14 +1,66 @@
+diff --git a/SOURCES/nss-split-softokn.sh b/SOURCES/nss-split-softokn.sh
+index 4c96ba4..744e69b 100755
+--- a/SOURCES/nss-split-softokn.sh
++++ b/SOURCES/nss-split-softokn.sh
+@@ -2,7 +2,7 @@
+ #
+ # Splits NSS into nss-util and nss-softokn
+ # Takes as command line input the version of nss
+-# and assumes that a file nss-${nss_version}-stripped.tar.bz2
++# and assumes that a file nss-${nss_version}.tar.gz
+ # exits in the current directory
+ 
+ set -e
+@@ -16,9 +16,9 @@ fi
+ export name=nss
+ export version=$1
+ 
+-echo "Extracting ${name}-${version}-stripped.tar.bz2"
++echo "Extracting ${name}-${version}.tar.gz"
+ 
+-tar -xjf ${name}-${version}-stripped.tar.bz2
++tar -xzf ${name}-${version}.tar.gz
+ 
+ # the directory will be named ${name}-${version}
+ 
+@@ -94,7 +94,7 @@ done
+ 
+ pushd ${WORK}
+ # the compressed tar ball for nss-softokn
+-tar -cjf ../${name}-softokn-${version}-stripped.tar.bz2 ${softokn_dir}
++tar -cjf ../${name}-softokn-${version}.tar.bz2 ${softokn_dir}
+ popd
+ 
+ # cleanup after ourselves
 diff --git a/SPECS/nss-softokn.spec b/SPECS/nss-softokn.spec
-index 0d47a5b..6b0f570 100644
+index 0d47a5b..d4bd6a0 100644
 --- a/SPECS/nss-softokn.spec
 +++ b/SPECS/nss-softokn.spec
+@@ -42,7 +42,7 @@ BuildRequires:    gawk
+ BuildRequires:    psmisc
+ BuildRequires:    perl
+ 
+-Source0:          %{name}-%{version}-stripped.tar.bz2
++Source0:          %{name}-%{version}.tar.bz2
+ # The nss-softokn tar ball is a subset of nss-{version}-stripped.tar.bz2.
+ # We use the nss-split-softokn.sh script to keep only what we need.
+ # We first produce the full source archive from from the upstream,
+@@ -60,7 +60,7 @@ Source0:          %{name}-%{version}-stripped.tar.bz2
+ # sh ./nss-split-softokn.sh ${version}
+ # A file named {name}-{version}-stripped.tar.bz2 should appear
+ # which is ready for uploading to the lookaside cache.
+-Source1:          mozilla-crypto-strip.sh
++#Source1:          mozilla-crypto-strip.sh
+ Source2:          nss-split-softokn.sh
+ Source3:          nss-softokn.pc.in
+ Source4:          nss-softokn-config.in
 @@ -195,6 +195,10 @@ export IN_TREE_FREEBL_HEADERS_FIRST=1
  # Use only the basicutil subset for sectools.a
  export NSS_BUILD_SOFTOKEN_ONLY=1
  
 +# Enable ECC
-+export NSS_ENABLE_ECC=1
-+export NSS_ECC_MORE_THAN_SUITE_B=1
++NSS_ENABLE_ECC=1
++export NSS_ENABLE_ECC
 +
  # Compile softokn plus needed support
  %{__make} -C ./nss/coreconf

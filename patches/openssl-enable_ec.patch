@@ -1,14 +1,8 @@
 diff --git a/SPECS/openssl.spec b/SPECS/openssl.spec
-index 19c769a..ce8339d 100644
+index 19c769a..e2f300f 100644
 --- a/SPECS/openssl.spec
 +++ b/SPECS/openssl.spec
-@@ -21,13 +21,13 @@
- Summary: Utilities from the general purpose cryptography library with TLS implementation
- Name: openssl
- Version: 1.0.1e
--Release: 4%{?dist}
-+Release: 4.ecc
- Epoch: 1
+@@ -26,8 +26,8 @@ Epoch: 1
  # We have to remove certain patented algorithms from the openssl source
  # tarball with the hobble-openssl script which is included below.
  # The original openssl upstream tarball cannot be shipped in the .src.rpm.
